@@ -38,7 +38,7 @@ from .periodic import displacement, get_heights, wrap, inverse
 from .utils import boolean_mask_1d, cast, squared_distance
 
 Neighbors = namedtuple(
-    "Neighbors", ("centers", "others", "pair_i", "pair_j", "overflow", "reference_positions", "cell_list")
+    "Neighbors", ("centers", "others", "idx_i_lr", "idx_j_lr", "overflow", "reference_positions", "cell_list")
 )
 
 CellList = namedtuple(
@@ -161,14 +161,14 @@ def quadratic_neighbor_list(cell, cutoff,  skin, capacity_multiplier=1.25, use_c
             cl=cl
         )
         size = int(hits_pairs.item() * capacity_multiplier + 1)
-        pair_i, _ = boolean_mask_1d(centers, mask_pairs, size, N)
-        pair_j, _ = boolean_mask_1d(others, mask_pairs, size, N)
+        idx_i_lr, _ = boolean_mask_1d(centers, mask_pairs, size, N)
+        idx_j_lr, _ = boolean_mask_1d(others, mask_pairs, size, N)
         size = int(hits.item() * capacity_multiplier + 1)
         centers, _ = boolean_mask_1d(centers, mask, size, N)
         others, overflow = boolean_mask_1d(others, mask, size, N)
         overflow = overflow | cell_too_small(new_cell)
 
-        return Neighbors(centers, others, pair_i, pair_j, overflow, positions, cl)
+        return Neighbors(centers, others, idx_i_lr, idx_j_lr, overflow, positions, cl)
     
     def update_fn(positions, neighbors, new_cell=None, padding_mask=None, force_update=False):
         # this is jittable,
@@ -182,7 +182,7 @@ def quadratic_neighbor_list(cell, cutoff,  skin, capacity_multiplier=1.25, use_c
         N = positions.shape[0]
         dim = positions.shape[1]
         size = neighbors.centers.shape[0]
-        size_pairs = neighbors.pair_i.shape[0]
+        size_pairs = neighbors.idx_i_lr.shape[0]
         def update(positions, cell, padding_mask, cl=neighbors.cell_list):
             cl = cl_update(positions, cl, new_cell)  if cl_update is not None else None
             centers, others, sq_distances, mask, mask_pairs, _, __ = get_neighbors(
@@ -193,12 +193,12 @@ def quadratic_neighbor_list(cell, cutoff,  skin, capacity_multiplier=1.25, use_c
                 padding_mask=padding_mask,
                 cl=cl
             )
-            pair_i, _ = boolean_mask_1d(centers, mask_pairs, size_pairs, N)
-            pair_j, _ = boolean_mask_1d(others, mask_pairs, size_pairs, N)
+            idx_i_lr, _ = boolean_mask_1d(centers, mask_pairs, size_pairs, N)
+            idx_j_lr, _ = boolean_mask_1d(others, mask_pairs, size_pairs, N)
             centers, _ = boolean_mask_1d(centers, mask, size, N)
             others, overflow = boolean_mask_1d(others, mask, size, N)
             overflow = overflow | cell_too_small(cell)
-            return Neighbors(centers, others, pair_i, pair_j, overflow, positions, cl)
+            return Neighbors(centers, others, idx_i_lr, idx_j_lr, overflow, positions, cl)
 
         # if we need an update, call update(), else do a no-op and return input
         return cond(

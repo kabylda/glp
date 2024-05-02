@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from .utils import cast
 from .periodic import displacement
 
-Graph = namedtuple("Graph", ("positions", "edges", "nodes", "centers", "others", "mask", "total_charge", "num_unpaired_electrons", "idx_i_lr", "idx_j_lr",  "pair_displacements", "cell", "ngrid", "alpha", "frequency"))
+Graph = namedtuple("Graph", ("positions", "edges", "nodes", "centers", "others", "mask", "total_charge", "num_unpaired_electrons", "idx_i_lr", "idx_j_lr",  "d_ij_lr", "cell", "ngrid", "alpha", "frequency"))
 
 def system_to_graph(system, neighbors, pme):
     # neighbors are an *updated* neighborlist
@@ -18,11 +18,11 @@ def system_to_graph(system, neighbors, pme):
     edges = jax.vmap(partial(displacement, system.cell))(
         positions[neighbors.centers], positions[neighbors.others]
     )
-    pair_displacements = jax.vmap(partial(displacement, system.cell))(
-        positions[neighbors.centers], positions[neighbors.others]
+    d_ij_lr = jax.vmap(partial(displacement, system.cell))(
+        positions[neighbors.idx_i_lr], positions[neighbors.idx_j_lr]
     )
 
     mask = neighbors.centers != positions.shape[0]
 
-    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, neighbors.pair_i, neighbors.pair_j, pair_displacements, system.cell,  pme.ngrid, pme.alpha, pme.frequencies)
+    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, neighbors.idx_i_lr, neighbors.idx_j_lr, d_ij_lr, system.cell,  pme.ngrid, pme.alpha, pme.frequencies)
 
