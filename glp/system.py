@@ -16,6 +16,11 @@ def atoms_to_system(atoms, dtype=jnp.float32):
         atoms.get_atomic_numbers(), dtype=jnp.int16
     )  # we will infer this type
     cell = jnp.array(atoms.get_cell().array.T, dtype=dtype)
+    #TODO: delete this if/else?
+    if jnp.sum(cell) == 0:
+        cell = None
+    else:
+        cell = cell
     try:
         total_charge = atoms.info['charge']
     except:
