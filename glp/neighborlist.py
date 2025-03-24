@@ -440,7 +440,7 @@ def cell_dimensions(cell, cutoff):
     """Compute the number of cells-per-side and total number of cells in a box."""
     # Considering cell is 3x3 array
     # Transform into reciprocal space to get the cell size whatever cell is
-    face_dist = get_heights(cell).astype(jnp.int32)
+    face_dist = get_heights(cell)
     cells_per_side = jnp.array(jnp.floor(face_dist / cutoff), dtype = jnp.int32)
     cell_size = jnp.where(cells_per_side != 0, cell / cells_per_side, cell)
     cell_count = jnp.prod(cells_per_side).astype(jnp.int32)
