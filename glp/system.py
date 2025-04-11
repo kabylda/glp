@@ -4,7 +4,7 @@ from jax import numpy as jnp
 
 from .periodic import make_displacement
 
-System = namedtuple("System", ("R", "Z", "cell", "total_charge", "num_unpaired_electrons"))
+System = namedtuple("System", ("R", "Z", "cell", "total_charge", "num_unpaired_electrons", "k_grid", "k_smearing"))
 UnfoldedSystem = namedtuple(
     "System", ("R", "Z", "cell", "total_charge", "num_unpaired_electrons", "mask", "replica_idx", "padding_mask", "updated")
 )
@@ -29,9 +29,17 @@ def atoms_to_system(atoms, dtype=jnp.float32):
         num_unpaired_electrons = atoms.info['multiplicity'] - 1
     except:
         num_unpaired_electrons = jnp.array(0.) 
+    try:
+        k_grid = atoms.info['k_grid']
+    except:
+        k_grid = None
+    try:
+        k_smearing = atoms.info['k_smearing']
+    except:
+        k_smearing = None
     total_charge = jnp.array([total_charge], dtype=dtype)
     num_unpaired_electrons = jnp.array([num_unpaired_electrons], dtype=dtype)
-    return System(R, Z, cell, total_charge, num_unpaired_electrons)
+    return System(R, Z, cell, total_charge, num_unpaired_electrons, k_grid, k_smearing)
 
 
 def unfold_system(system, unfolding):
