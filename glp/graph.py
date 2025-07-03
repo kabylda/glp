@@ -25,6 +25,7 @@ def system_to_graph(system, neighbors):
 
     k_grid = system.k_grid
     k_smearing = system.k_smearing
+    theory_mask = system.theory_mask
 
-    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, edges_lr, neighbors.idx_i_lr, neighbors.idx_j_lr, system.cell, k_grid, k_smearing, system.theory_mask)
+    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, edges_lr, neighbors.idx_i_lr, neighbors.idx_j_lr, system.cell, k_grid, k_smearing, theory_mask)
 
