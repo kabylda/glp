@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from .utils import cast
 from .periodic import displacement
 
-Graph = namedtuple("Graph", ("positions","edges", "nodes", "centers", "others", "mask", "total_charge", "num_unpaired_electrons", "edges_lr", "idx_i_lr", "idx_j_lr", "cell", "k_grid", "k_smearing"))
+Graph = namedtuple("Graph", ("positions","edges", "nodes", "centers", "others", "mask", "total_charge", "num_unpaired_electrons", "edges_lr", "idx_i_lr", "idx_j_lr", "cell", "k_grid", "k_smearing", "theory_mask"))
 
 def system_to_graph(system, neighbors):
     # neighbors are an *updated* neighborlist
@@ -26,5 +26,5 @@ def system_to_graph(system, neighbors):
     k_grid = system.k_grid
     k_smearing = system.k_smearing
 
-    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, edges_lr, neighbors.idx_i_lr, neighbors.idx_j_lr, system.cell, k_grid, k_smearing)
+    return Graph(positions, edges, nodes, neighbors.centers, neighbors.others, mask, system.total_charge, system.num_unpaired_electrons, edges_lr, neighbors.idx_i_lr, neighbors.idx_j_lr, system.cell, k_grid, k_smearing, system.theory_mask)
 
